@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>News Test</title>
+  <style>
+    .news-item { margin-bottom:18px; padding:12px; border-radius:8px; background:#f8fafc; }
+    .news-item img { max-width:100%; height:auto; border-radius:6px; margin-bottom:8px; }
+    .source { color:#1976d2; }
+    .date { color:#888; margin-left:12px; }
+  </style>
+</head>
+<body>
+  <h2>Latest Financial News (Test Page)</h2>
+  <div id="news-articles"></div>
+
+  <script>
+    const endpoints = [
+      { name: "CoinDesk", url: "http://localhost:3001/api/coindesk" },
+      { name: "Cointelegraph", url: "http://localhost:3001/api/cointelegraph" },
+      { name: "Bitcoinist", url: "http://localhost:3001/api/bitcoinist" },
+      { name: "Decrypt", url: "http://localhost:3001/api/decrypt" },
+      { name: "BSC News", url: "http://localhost:3001/api/bsc" },
+      { name: "The Guardian", url: "http://localhost:3001/api/theguardian" },
+      { name: "CryptoDaily", url: "http://localhost:3001/api/cryptodaily" }
+];
+      // Add more endpoints if you want to test others
+
+    const newsContainer = document.getElementById('news-articles');
+    newsContainer.innerHTML = "<p>Loading news...</p>";
+
+    Promise.all(
+      endpoints.map(endpoint =>
+        fetch(endpoint.url)
+          .then(res => res.json())
+          .then(data => {
+            console.log(endpoint.name, data); // See what you get!
+            let articles = [];
+            if (Array.isArray(data.data)) articles = data.data;
+            else if (Array.isArray(data.result)) articles = data.result;
+            else if (Array.isArray(data)) articles = data;
+            return { name: endpoint.name, articles };
+          })
+          .catch(() => ({ name: endpoint.name, articles: [] }))
+      )
+    ).then(allNews => {
+      newsContainer.innerHTML = "";
+      let found = false;
+      allNews.forEach(source => {
+        if (source.articles.length) {
+          found = true;
+          source.articles.slice(0, 3).forEach(article => {
+            newsContainer.innerHTML += `
+              <div class="news-item">
+                <img src="${article.thumbnail || ''}" alt="news image">
+                <h3><a href="${article.url}" target="_blank">${article.title}</a></h3>
+                <p>${article.description || ''}</p>
+                <span class="source">${source.name}</span>
+                <span class="date">${article.createdAt ? new Date(article.createdAt).toLocaleDateString() : ''}</span>
+              </div>
+            `;
+          });
+        }
+      });
+      if (!found) {
+        newsContainer.innerHTML = "<p>No news found from any source.</p>";
+      }
+    });
+  </script>
+</body>
+</html>
