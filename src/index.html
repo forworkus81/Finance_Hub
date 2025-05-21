@@ -30,7 +30,7 @@
         <div class="container main-flex">
             <!-- Latest Financial News -->
             <div class="main-col" id="news-col">
-                <h2 href="pages/latestnews.html" >
+                <h2>
                   Latest Financial News
                   <a href="pages/latestnews.html" style="font-size:0.7em; float:right; margin-top:8px;">See All &rarr;</a>
                 </h2>
@@ -41,24 +41,28 @@
                 <h2>Explore Categories</h2>
                 <div class="category-grid">
                     <div class="category-item">
-                        <h3><a href="../pages/investing.html">Investing</a></h3>
+                        <h3><a href="pages/investing.html">Investing</a></h3>
                         <p>Learn how to invest wisely and grow your wealth.</p>
                     </div>
                     <div class="category-item">
-                        <h3><a href="../pages/personal-finance.html">Personal Finance</a></h3>
+                        <h3><a href="pages/personal-finance.html">Personal Finance</a></h3>
                         <p>Get tips on budgeting, saving, and managing your money.</p>
                     </div>
                     <div class="category-item">
-                        <h3><a href="../pages/loans.html">Loans</a></h3>
+                        <h3><a href="pages/loans.html">Loans</a></h3>
                         <p>Compare loan options and find the best rates.</p>
                     </div>
                     <div class="category-item">
-                        <h3><a href="../pages/credit-cards.html">Credit Cards</a></h3>
+                        <h3><a href="pages/credit-cards.html">Credit Cards</a></h3>
                         <p>Find the best credit cards for cashback, travel, and more.</p>
                     </div>
                     <div class="category-item">
-                        <h3><a href="../pages/beginner-guides.html">Beginner Guides</a></h3>
+                        <h3><a href="pages/beginner-guides.html">Beginner Guides</a></h3>
                         <p>Start your financial journey with our beginner-friendly guides.</p>
+                    </div>
+                    <div class="category-item">
+                        <h3><a href="pages/financial-news.html">Financial News</a></h3>
+                        <p>Stay updated with the latest financial news and market trends.</p>
                     </div>
                 </div>
             </div>
@@ -72,20 +76,20 @@
             <div class="article-grid">
                 <!-- Example Trending Article -->
                 <article class="news-item">
-                    <img src="../content/beginner-guides/images/test10.jpg" alt="Stock Market Tips">
-                    <h4><a href="../content/beginner-guides/beginner-guide-10.html">How to Build Good Money Habits Early (And Why It Matters)</a></h4>
+                    <img src="content/beginner-guides/images/test10.jpg" alt="Stock Market Tips">
+                    <h4><a href="content/beginner-guides/beginner-guide-10.html">How to Build Good Money Habits Early (And Why It Matters)</a></h4>
                     <p>Daily and monthly habits that set you up for lifelong financial success.</p>
                     <span class="date">Published: May 9, 2025</span>
                 </article>
                 <article class="news-item">
-                    <img src="../content/credit-cards/images/credit-2.webp" alt="Cashback Credit Cards">
-                    <h4><a href="../content/credit-cards/credit-2.html">Cashback Credit Cards: How to Earn Money on Every Purchase in 2024</a></h4>
+                    <img src="content/credit-cards/images/credit-2.webp" alt="Cashback Credit Cards">
+                    <h4><a href="content/credit-cards/credit-2.html">Cashback Credit Cards: How to Earn Money on Every Purchase in 2024</a></h4>
                     <p>Earning the most cash back on everyday spending and bills.</p>
                     <span class="date">Published: May 4, 2025</span>
                 </article>
                 <article class="news-item">
-                    <img src="../content/investing/images/investing-4.webp" alt="Investing Basics">
-                    <h4><a href="../content/investing/investing-3.html">Investing for Beginners</a></h4>
+                    <img src="content/investing/images/investing-4.webp" alt="Investing Basics">
+                    <h4><a href="content/investing/investing-3.html">Investing for Beginners</a></h4>
                     <p>A step-by-step guide to help you start investing with confidence.</p>
                     <span class="date">Published: May 10, 2025</span>
                 </article>
@@ -145,7 +149,11 @@
     const endpoints = [
       { name: "CoinDesk", url: "http://localhost:3001/api/coindesk" },
       { name: "Cointelegraph", url: "http://localhost:3001/api/cointelegraph" },
-       
+      { name: "Bitcoinist", url: "http://localhost:3001/api/bitcoinist" },
+      { name: "Decrypt", url: "http://localhost:3001/api/decrypt" },
+      { name: "BSC News", url: "http://localhost:3001/api/bsc" },
+      { name: "The Guardian", url: "http://localhost:3001/api/theguardian" },
+      { name: "CryptoDaily", url: "http://localhost:3001/api/cryptodaily" }
     ];
 
     const newsContainer = document.getElementById('news-articles');
@@ -160,32 +168,36 @@
             if (Array.isArray(data.data)) articles = data.data;
             else if (Array.isArray(data.result)) articles = data.result;
             else if (Array.isArray(data)) articles = data;
-            return { name: endpoint.name, articles };
+            // Attach source name to each article
+            return articles.map(article => ({ ...article, source: endpoint.name }));
           })
-          .catch(() => ({ name: endpoint.name, articles: [] }))
+          .catch(() => [])
       )
-    ).then(allNews => {
+    ).then(allNewsArrays => {
       newsContainer.innerHTML = "";
-      let found = false;
-      allNews.forEach(source => {
-        if (source.articles.length) {
-          found = true;
-          source.articles.slice(0, 3).forEach(article => {
-            newsContainer.innerHTML += `
-              <div class="news-item">
-                <img src="${article.thumbnail || ''}" alt="news image">
-                <h3><a href="${article.url}" target="_blank">${article.title}</a></h3>
-                <p>${article.description || ''}</p>
-                <span class="source">${source.name}</span>
-                <span class="date">${article.createdAt ? new Date(article.createdAt).toLocaleDateString() : ''}</span>
-              </div>
-            `;
-          });
-        }
-      });
-      if (!found) {
+      // Flatten all articles into one array
+      const allArticles = allNewsArrays.flat();
+      // Sort by date (descending)
+      allArticles.sort((a, b) => new Date(b.createdAt || b.published_at || 0) - new Date(a.createdAt || a.published_at || 0));
+      // Take only the first 3 articles
+      const topArticles = allArticles.slice(0, 3);
+
+      if (topArticles.length === 0) {
         newsContainer.innerHTML = "<p>No news found from any source.</p>";
+        return;
       }
+
+      topArticles.forEach(article => {
+        newsContainer.innerHTML += `
+          <div class="news-item">
+            <img src="${article.thumbnail || ''}" alt="news image">
+            <h3><a href="${article.url}" target="_blank">${article.title}</a></h3>
+            <p>${article.description || ''}</p>
+            <span class="source">${article.source || ''}</span>
+            <span class="date">${article.createdAt ? new Date(article.createdAt).toLocaleDateString() : (article.published_at ? new Date(article.published_at).toLocaleDateString() : '')}</span>
+          </div>
+        `;
+      });
     });
 
     // Simple client-side search for article/news titles
