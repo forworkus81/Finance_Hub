@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7595328958267933"
+     crossorigin="anonymous"></script>
   <meta charset="UTF-8">
   <title>All Latest Financial News</title>
   <link rel="stylesheet" href="../css/styles.css">
@@ -10,67 +12,69 @@
     <div class="container header-flex">
       <h1><a href="../index.html">Finance Hub</a></h1>
       <nav>
-        <ul>
-          <li><a href="../index.html">Home</a></li>
-          <li><a href="#categories">Categories</a></li>
-        </ul>
+       <ul>
+                    <li><a href="../index.html">Home</a></li>
+                   <li><a href="../pages/beginner-guides.html">Beginner Guide</a></li>
+                    <li><a href="../pages/investing.html">Investing</a></li>
+                    <li><a href="../pages/loans.html">Loans</a></li>
+                    <li><a href="../pages/personal-finance.html">Personal Finance</a></li>
+                    
+                </ul>
       </nav>
     </div>
   </header>
-  <section class="news-grid">
-    <div class="container">
-      <h2>All Latest Financial News</h2>
-      <div id="all-news-articles"></div>
-    </div>
+  <div id="back-news"><a href="../../pages/financial-news.html" class="back-to-category">&larr;Back to Home</a></div>
+  <section  class="main-flex-section" id="categories">
+    <div class="container main-flex">
+      <!-- Latest Financial News -->
+      <div class="main-col" id="news-col">
+        <h2>
+          Latest Financial News
+          
+        </h2>
+        <div id="news-articles"></div>
+      </div>
+    
   </section>
   <script>
-    const endpoints = [
-      { name: "CoinDesk", url: "http://localhost:3001/api/coindesk" },
-      { name: "Cointelegraph", url: "http://localhost:3001/api/cointelegraph" },
-      { name: "Bitcoinist", url: "http://localhost:3001/api/bitcoinist" },
-      { name: "Decrypt", url: "http://localhost:3001/api/decrypt" },
-      { name: "BSC News", url: "http://localhost:3001/api/bsc" },
-      { name: "The Guardian", url: "http://localhost:3001/api/theguardian" },
-      { name: "CryptoDaily", url: "http://localhost:3001/api/cryptodaily" }
-    ];
-    const newsContainer = document.getElementById('all-news-articles');
-    newsContainer.innerHTML = "<p>Loading news...</p>";
-    Promise.all(
-      endpoints.map(endpoint =>
-        fetch(endpoint.url)
-          .then(res => res.json())
-          .then(data => {
-            let articles = [];
-            if (Array.isArray(data.data)) articles = data.data;
-            else if (Array.isArray(data.result)) articles = data.result;
-            else if (Array.isArray(data)) articles = data;
-            return { name: endpoint.name, articles };
-          })
-          .catch(() => ({ name: endpoint.name, articles: [] }))
-      )
-    ).then(allNews => {
-      newsContainer.innerHTML = "";
-      let found = false;
-      allNews.forEach(source => {
-        if (source.articles.length) {
-          found = true;
-          source.articles.forEach(article => {
-            newsContainer.innerHTML += `
-              <div class="news-item">
-                <img src="${article.thumbnail || ''}" alt="news image">
-                <h3><a href="${article.url}" target="_blank">${article.title}</a></h3>
-                <p>${article.description || ''}</p>
-                <span class="source">${source.name}</span>
-                <span class="date">${article.createdAt ? new Date(article.createdAt).toLocaleDateString() : ''}</span>
-              </div>
-            `;
-          });
-        }
-      });
-      if (!found) {
-        newsContainer.innerHTML = "<p>No news found from any source.</p>";
+// Live News Fetch
+const newsContainer = document.getElementById('news-articles');
+newsContainer.innerHTML = "<p>Loading news...</p>";
+
+    fetch("https://cryptocurrency-news2.p.rapidapi.com/v1/cryptodaily", {
+      method: "GET",
+      headers: {
+        "X-Rapidapi-Key": "0dbe0a69c9msh8e5a636621ec677p1c6021jsna68bc5a617c9",
+        "X-Rapidapi-Host": "cryptocurrency-news2.p.rapidapi.com"
       }
+    })
+    .then(res => res.json())
+    .then(data => {
+      newsContainer.innerHTML = "";
+      // Show only the first 3 articles
+      (data?.data || []).slice(0, 30).forEach(article => {
+        newsContainer.innerHTML += `
+          <div class="news-item">
+            <img src="${article.thumbnail || ''}" alt="news image">
+            <h3><a href="${article.url}" target="_blank">${article.title}</a></h3>
+            <p>${article.description || ''}</p>
+            <span class="source">CryptoDaily</span>
+            <span class="date">${article.createdAt ? new Date(article.createdAt).toLocaleDateString() : ''}</span>
+          </div>
+        `;
+      });
+      if ((data?.data || []).length === 0) {
+        newsContainer.innerHTML = "<p>No news found.</p>";
+      }
+    })
+    .catch(err => {
+      newsContainer.innerHTML = "<p>Failed to load news. (CORS or API error)</p>";
+      console.error(err);
     });
-  </script>
+
+    
+
+    
+</script>
 </body>
 </html>
