@@ -146,58 +146,38 @@
     <!-- Scripts -->
     <script>
     // Live News Fetch
-    const endpoints = [
-      { name: "CoinDesk", url: "https://backend-azure-five-19.vercel.app//api/coindesk" },
-      { name: "Cointelegraph", url: "https://backend-azure-five-19.vercel.app//cointelegraph" },
-      { name: "Bitcoinist", url: "http://localhost:3001/api/bitcoinist" },
-      { name: "Decrypt", url: "http://localhost:3001/api/decrypt" },
-      { name: "BSC News", url: "http://localhost:3001/api/bsc" },
-      { name: "The Guardian", url: "http://localhost:3001/api/theguardian" },
-      { name: "CryptoDaily", url: "http://localhost:3001/api/cryptodaily" }
-    ];
-
     const newsContainer = document.getElementById('news-articles');
     newsContainer.innerHTML = "<p>Loading news...</p>";
 
-    Promise.all(
-      endpoints.map(endpoint =>
-        fetch(endpoint.url)
-          .then(res => res.json())
-          .then(data => {
-            let articles = [];
-            if (Array.isArray(data.data)) articles = data.data;
-            else if (Array.isArray(data.result)) articles = data.result;
-            else if (Array.isArray(data)) articles = data;
-            // Attach source name to each article
-            return articles.map(article => ({ ...article, source: endpoint.name }));
-          })
-          .catch(() => [])
-      )
-    ).then(allNewsArrays => {
-      newsContainer.innerHTML = "";
-      // Flatten all articles into one array
-      const allArticles = allNewsArrays.flat();
-      // Sort by date (descending)
-      allArticles.sort((a, b) => new Date(b.createdAt || b.published_at || 0) - new Date(a.createdAt || a.published_at || 0));
-      // Take only the first 3 articles
-      const topArticles = allArticles.slice(0, 3);
-
-      if (topArticles.length === 0) {
-        newsContainer.innerHTML = "<p>No news found from any source.</p>";
-        return;
+    fetch("https://cryptocurrency-news2.p.rapidapi.com/v1/cryptodaily", {
+      method: "GET",
+      headers: {
+        "X-Rapidapi-Key": "0dbe0a69c9msh8e5a636621ec677p1c6021jsna68bc5a617c9",
+        "X-Rapidapi-Host": "cryptocurrency-news2.p.rapidapi.com"
       }
-
-      topArticles.forEach(article => {
+    })
+    .then(res => res.json())
+    .then(data => {
+      newsContainer.innerHTML = "";
+      // Show only the first 3 articles
+      (data?.data || []).slice(0, 3).forEach(article => {
         newsContainer.innerHTML += `
           <div class="news-item">
             <img src="${article.thumbnail || ''}" alt="news image">
             <h3><a href="${article.url}" target="_blank">${article.title}</a></h3>
             <p>${article.description || ''}</p>
-            <span class="source">${article.source || ''}</span>
-            <span class="date">${article.createdAt ? new Date(article.createdAt).toLocaleDateString() : (article.published_at ? new Date(article.published_at).toLocaleDateString() : '')}</span>
+            <span class="source">CryptoDaily</span>
+            <span class="date">${article.createdAt ? new Date(article.createdAt).toLocaleDateString() : ''}</span>
           </div>
         `;
       });
+      if ((data?.data || []).length === 0) {
+        newsContainer.innerHTML = "<p>No news found.</p>";
+      }
+    })
+    .catch(err => {
+      newsContainer.innerHTML = "<p>Failed to load news. (CORS or API error)</p>";
+      console.error(err);
     });
 
     // Simple client-side search for article/news titles
