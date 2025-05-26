@@ -59,7 +59,7 @@ header nav ul li a {
     display: flex;
     gap: 32px;
     align-items: flex-start;
-    flex-direction: column;
+    flex-direction: row;
 }
 .main-col {
     flex: 1 1 0;
@@ -74,9 +74,11 @@ header nav ul li a {
 }
 #news-col {
     margin-right: 0;
+    border-right:  #1976d2 2px solid;
 }
 #categories-col {
     margin-left: 0;
+    border-right:  #1976d2 2px solid;
 }
 .category-grid {
     display: grid;
@@ -85,14 +87,19 @@ header nav ul li a {
     margin-top: 16px;
 }
 .category-item {
-    background: #f8fafc;
+    background: #bad3ec;
     border-radius: 8px;
     padding: 18px 14px;
-    box-shadow: 0 1px 4px #e3f0fa;
+    box-shadow: 0 1px 4px #678faf;
     min-height: 120px;
     display: flex;
     flex-direction: column;
     justify-content: center;
+}
+.category-item:hover{
+    background: #c1d0e2;
+    box-shadow: 0 2px 6px #dfe8f0;
+    animation-timing-function: cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 .category-item h3 {
     margin: 0 0 4px 0;
